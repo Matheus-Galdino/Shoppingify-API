@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using ShoppingifyAPI.Context;
 
 namespace ShoppingifyAPI
 {
@@ -24,6 +26,13 @@ namespace ShoppingifyAPI
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ShoppingifyAPI", Version = "v1" });
+            });
+
+            services.AddDbContext<ApiContext>(options =>
+            {
+                var conString = Configuration.GetConnectionString("MyCon");
+
+                options.UseMySql(conString, ServerVersion.AutoDetect(conString));
             });
         }
 
