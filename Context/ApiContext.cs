@@ -5,9 +5,9 @@ namespace ShoppingifyAPI.Context
 {
     public class ApiContext : DbContext
     {
-        public DbSet<Item> Items;
-        public DbSet<Category> Categories;
+        public DbSet<Item> Items { get; set; }
+        public DbSet<Category> Categories { get; set; }
 
-        public ApiContext(DbContextOptions options) : base(options) { }
+        public ApiContext(DbContextOptions<ApiContext> options) : base(options) { }
     }
 }
