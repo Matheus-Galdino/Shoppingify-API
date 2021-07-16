@@ -33,7 +33,7 @@ namespace ShoppingifyAPI
                 var conString = Configuration.GetConnectionString("MyCon");
 
                 options.UseMySql(conString, ServerVersion.AutoDetect(conString));
-            });
+            });            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -51,6 +51,8 @@ namespace ShoppingifyAPI
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseCors(x => x.AllowAnyMethod().AllowAnyOrigin().AllowAnyHeader());
 
             app.UseEndpoints(endpoints =>
             {
