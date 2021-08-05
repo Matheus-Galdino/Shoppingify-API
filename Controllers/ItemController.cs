@@ -12,17 +12,17 @@ namespace ShoppingifyAPI.Controllers
     [Route("api/[controller]")]
     public class ItemController : ControllerBase
     {
-        private ApiContext _context;
+        private readonly ApiContext _context;
 
         public ItemController(ApiContext context) => _context = context;
 
         [HttpGet]
-        public ActionResult<List<ItemGroup>> GetAll()
+        public ActionResult<List<Group<Item>>> GetAll()
         {
             var items = _context.Items.Include(x => x.Category).ToList();
 
             var groupedItems = items
-                .GroupBy(x => x.Category, (key, group) => new ItemGroup(key.Name, group))
+                .GroupBy(x => x.Category, (key, group) => new Group<Item>(key.Name, group))
                 .OrderBy(x => x.Key)
                 .ToList();
 
