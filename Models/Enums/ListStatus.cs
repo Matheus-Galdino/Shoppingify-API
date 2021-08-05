@@ -2,8 +2,8 @@
 {
     public enum ListStatus
     {
-        Cancelled,
-        Completed,
-        In_Progress
+        In_Progress = 0,
+        Cancelled = 1,
+        Completed = 2,
     }
 }
