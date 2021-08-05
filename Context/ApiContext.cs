@@ -15,7 +15,7 @@ namespace ShoppingifyAPI.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ShoppingListItem>().HasKey(shopI => new { shopI.ItemId, shopI.ShoppingListId });
-            modelBuilder.Entity<ShoppingListItem>().Ignore(si => si.ShoppingList).ToTable("shoppinglistitem");
+            modelBuilder.Entity<ShoppingListItem>().Ignore(si => si.ShoppingList).ToTable("ShoppingListItem");
 
             base.OnModelCreating(modelBuilder);
         }
