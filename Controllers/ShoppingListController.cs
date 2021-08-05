@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using ShoppingifyAPI.Models.Enums;
 
 namespace ShoppingifyAPI.Controllers
 {
@@ -62,6 +63,18 @@ namespace ShoppingifyAPI.Controllers
             var listItem = new ShoppingListItem { Item = item, ItemId = itemId, ShoppingListId = listId, Quantity = 1 };
 
             _context.ShoppingListItems.Add(listItem);
+            _context.SaveChanges();
+
+            return Ok();
+        }
+
+        [HttpPut("{listId}/status")]
+        public ActionResult ChangeListStatus([FromRoute] int listId, [FromQuery] ListStatus status)
+        {
+            var list = _context.ShoppingLists.Where(x => x.Id == listId).FirstOrDefault();
+
+            list.Status = status;
+
             _context.SaveChanges();
 
             return Ok();
