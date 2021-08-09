@@ -18,10 +18,7 @@ namespace ShoppingifyAPI.Controllers
         public ShoppingListController(ApiContext context) => _context = context;
 
         [HttpGet]
-        public List<ShoppingList> GetLists()
-        {
-            return _context.ShoppingLists.ToList();
-        }
+        public List<ShoppingList> GetLists() => _context.ShoppingLists.OrderBy(x => x.Status).ToList();
 
         [HttpGet("{listId}/items")]
         public List<Group<ShoppingListItem>> GetListItem([FromRoute] int listId)
@@ -89,6 +86,21 @@ namespace ShoppingifyAPI.Controllers
 
             var selectedList = _context.ShoppingLists.Where(x => x.Id == listId).FirstOrDefault();
             selectedList.Active = true;
+
+            _context.SaveChanges();
+
+            return Ok();
+        }
+
+        [HttpPut("{listId}/item/{itemId}")]
+        public ActionResult UpdateItemQuantity([FromRoute] int listId, [FromRoute] int itemId, [FromQuery] int quantity)
+        {
+            var item = _context.ShoppingListItems.Where(x => x.ItemId == itemId && x.ShoppingListId == listId).FirstOrDefault();
+
+            if (item is null)
+                return BadRequest(new { error = "Not list item found with given IDs" });
+
+            item.Quantity = quantity;
 
             _context.SaveChanges();
 
