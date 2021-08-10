@@ -43,15 +43,6 @@ namespace ShoppingifyAPI.Controllers
             return Created("", shoppingList);
         }
 
-        [HttpDelete("{listId}")]
-        public async Task<ActionResult> DeleteList([FromRoute] int listId)
-        {
-            var list = await _context.ShoppingLists.Where(x => x.Id == listId).FirstOrDefaultAsync();
-            _context.ShoppingLists.Remove(list);
-
-            return Ok();
-        }
-
         [HttpPost("{listId}/add/{itemId}")]
         public ActionResult AddItemToList([FromRoute] int listId, [FromRoute] int itemId)
         {
@@ -102,6 +93,26 @@ namespace ShoppingifyAPI.Controllers
 
             item.Quantity = quantity;
 
+            _context.SaveChanges();
+
+            return Ok();
+        }
+
+        [HttpDelete("{listId}")]
+        public ActionResult DeleteList([FromRoute] int listId)
+        {
+            var list = _context.ShoppingLists.Where(x => x.Id == listId).FirstOrDefault();
+            _context.ShoppingLists.Remove(list);
+
+            return Ok();
+        }
+
+        [HttpDelete("{listId}/item/{itemId}")]
+        public ActionResult RemoveItemFromList([FromRoute] int listId, [FromRoute] int itemId)
+        {
+            var item = _context.ShoppingListItems.Where(x => x.ItemId == itemId && x.ShoppingListId == listId).FirstOrDefault();
+
+            _context.ShoppingListItems.Remove(item);
             _context.SaveChanges();
 
             return Ok();
