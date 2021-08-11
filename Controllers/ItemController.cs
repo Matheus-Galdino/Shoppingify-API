@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace ShoppingifyAPI.Controllers
 {
@@ -32,7 +33,23 @@ namespace ShoppingifyAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Item>> Create([FromBody] Item item)
         {
-            //max chars: 300
+            if (string.IsNullOrEmpty(item.Name?.Trim())) return BadRequest(new { error = "Item name must not be empty" });
+
+            if (item.Note?.Length > 300) return BadRequest(new { error = "Item note cannot have more than 300 chars" });
+
+            if (!string.IsNullOrEmpty(item.ImageUrl?.Trim()))
+            {
+                var regex = new Regex(@"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)");
+                var match = regex.Match(item.ImageUrl);
+
+                if (!match.Success)
+                    return BadRequest(new { error = "Item image url is not a valid url" });
+            }
+
+            var category = _context.Categories.Where(x => x.Id == item.CategoryId).FirstOrDefault();
+
+            if (category is null) return BadRequest(new { error = "Invalid category" });
+
             await _context.Items.AddAsync(item);
             await _context.SaveChangesAsync();
 
