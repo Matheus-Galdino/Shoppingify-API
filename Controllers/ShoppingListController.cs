@@ -48,7 +48,13 @@ namespace ShoppingifyAPI.Controllers
         {
             var item = _context.Items.Where(x => x.Id == itemId).FirstOrDefault();
 
+            if (item is null) return BadRequest(new { error = "Something went wrong" });
+
             var listItem = new ShoppingListItem { Item = item, ItemId = itemId, ShoppingListId = listId, Quantity = 1 };
+
+            var itemAlreadyInList = _context.ShoppingListItems.Contains(listItem);
+
+            if (itemAlreadyInList) return BadRequest(new { error = "Item is already on the list" });
 
             _context.ShoppingListItems.Add(listItem);
             _context.SaveChanges();
@@ -89,7 +95,7 @@ namespace ShoppingifyAPI.Controllers
             var item = _context.ShoppingListItems.Where(x => x.ItemId == itemId && x.ShoppingListId == listId).FirstOrDefault();
 
             if (item is null)
-                return BadRequest(new { error = "Not list item found with given IDs" });
+                return BadRequest(new { error = "Something went wrong" });
 
             item.Quantity = quantity;
 
