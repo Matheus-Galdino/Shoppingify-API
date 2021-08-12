@@ -21,6 +21,8 @@ namespace ShoppingifyAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Category>> Create([FromBody] Category category)
         {
+            if (string.IsNullOrEmpty(category?.Name)) return BadRequest(new { error = "Category must have a name" });
+
             await _context.Categories.AddAsync(category);
             await _context.SaveChangesAsync();
 

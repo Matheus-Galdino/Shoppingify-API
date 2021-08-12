@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using ShoppingifyAPI.Models.Enums;
+using System;
 
 namespace ShoppingifyAPI.Controllers
 {
@@ -37,6 +38,12 @@ namespace ShoppingifyAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<ShoppingList>> CreateList([FromBody] ShoppingList shoppingList)
         {
+            if (string.IsNullOrEmpty(shoppingList?.Name)) return BadRequest(new { error = "A list must have a name" });
+
+            if (shoppingList.Date < DateTime.Today) return BadRequest(new { error = "List date must be at least today" });
+
+            shoppingList.Status = ListStatus.In_Progress;
+
             await _context.ShoppingLists.AddAsync(shoppingList);
             await _context.SaveChangesAsync();
 
@@ -79,7 +86,10 @@ namespace ShoppingifyAPI.Controllers
         {
             var activeList = _context.ShoppingLists.Where(x => x.Active).FirstOrDefault();
 
-            activeList.Active = false;
+            if (activeList is not null)
+                activeList.Active = false;
+
+            if (activeList.Id == listId) return BadRequest(new { error = "List is already active" });
 
             var selectedList = _context.ShoppingLists.Where(x => x.Id == listId).FirstOrDefault();
             selectedList.Active = true;
@@ -96,6 +106,9 @@ namespace ShoppingifyAPI.Controllers
 
             if (item is null)
                 return BadRequest(new { error = "Something went wrong" });
+
+            if (quantity < 1)
+                return BadRequest(new { error = "Item quantity cannot be lower than 1" });
 
             item.Quantity = quantity;
 
