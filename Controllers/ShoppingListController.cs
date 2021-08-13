@@ -42,6 +42,7 @@ namespace ShoppingifyAPI.Controllers
 
             if (shoppingList.Date < DateTime.Today) return BadRequest(new { error = "List date must be at least today" });
 
+            shoppingList.Active = false;
             shoppingList.Status = ListStatus.In_Progress;
 
             await _context.ShoppingLists.AddAsync(shoppingList);
