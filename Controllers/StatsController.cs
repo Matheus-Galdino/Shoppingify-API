@@ -45,5 +45,21 @@ namespace ShoppingifyAPI.Controllers
 
             return topItems;
         }
+
+        [HttpGet("monthly")]
+        public ActionResult<List<Stat>> MonthlySummary()
+        {
+            var months = new string[] {"", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+
+            var monthly = _context.ShoppingLists.Include(x => x.Items)
+                .OrderBy(x => x.Date).ToList()
+                .GroupBy(x => x.Date.Month, (key, group) => new Stat
+                {
+                    Key = months[key],
+                    Amount = group.Sum(s => s.Items.Sum(i => i.Quantity))
+                }).ToList();
+
+            return monthly;
+        }
     }
 }
