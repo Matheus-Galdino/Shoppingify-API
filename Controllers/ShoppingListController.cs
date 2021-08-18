@@ -26,6 +26,8 @@ namespace ShoppingifyAPI.Controllers
         {
             var list = _context.ShoppingLists.Where(x => x.Id == listId).FirstOrDefault();
 
+            if (list is null) return null;
+
             var items = _context.ShoppingListItems
                 .Where(x => x.ShoppingListId == list.Id)
                 .Include(x => x.Item)
@@ -77,6 +79,8 @@ namespace ShoppingifyAPI.Controllers
 
             list.Status = status;
 
+            if (list.Active) list.Active = false;
+
             _context.SaveChanges();
 
             return Ok();
@@ -90,7 +94,7 @@ namespace ShoppingifyAPI.Controllers
             if (activeList is not null)
                 activeList.Active = false;
 
-            if (activeList.Id == listId) return BadRequest(new { error = "List is already active" });
+            if (activeList?.Id == listId) return BadRequest(new { error = "List is already active" });
 
             var selectedList = _context.ShoppingLists.Where(x => x.Id == listId).FirstOrDefault();
             selectedList.Active = true;
@@ -98,7 +102,7 @@ namespace ShoppingifyAPI.Controllers
             _context.SaveChanges();
 
             return Ok();
-        }
+        }        
 
         [HttpPut("{listId}/item/{itemId}")]
         public ActionResult UpdateItemQuantity([FromRoute] int listId, [FromRoute] int itemId, [FromQuery] int quantity)
@@ -123,6 +127,7 @@ namespace ShoppingifyAPI.Controllers
         {
             var list = _context.ShoppingLists.Where(x => x.Id == listId).FirstOrDefault();
             _context.ShoppingLists.Remove(list);
+            _context.SaveChanges();
 
             return Ok();
         }
