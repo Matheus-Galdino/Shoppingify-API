@@ -30,9 +30,9 @@ namespace ShoppingifyAPI
 
             services.AddDbContext<ApiContext>(options =>
             {
-                var conString = Configuration.GetConnectionString("MyCon");
+                var conString = Configuration.GetConnectionString("PostgresCon");
 
-                options.UseMySql(conString, ServerVersion.AutoDetect(conString));
+                options.UseNpgsql(conString);
             });            
         }
 
