@@ -26,7 +26,7 @@ namespace ShoppingifyAPI.Controllers
                 Key = x.Key,
                 Amount = x.Sum(s => s.Quantity),
                 Percentage = Math.Round(x.Sum(s => s.Quantity) * 100m / totalItems)
-            }).Take(3).OrderByDescending(x => x.Percentage).ToList();
+            }).OrderByDescending(x => x.Percentage).Take(3).ToList();
 
             return topItems;
         }
@@ -41,7 +41,7 @@ namespace ShoppingifyAPI.Controllers
                 Key = x.Key,
                 Amount = x.Sum(s => s.Quantity),
                 Percentage = Math.Round(x.Sum(s => s.Quantity) * 100m / totalItems)
-            }).Take(3).OrderByDescending(x => x.Percentage).ToList();
+            }).OrderByDescending(x => x.Percentage).Take(3).ToList();
 
             return topItems;
         }
