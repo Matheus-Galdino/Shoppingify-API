@@ -5,6 +5,7 @@ using ShoppingifyAPI.Context;
 using Microsoft.AspNetCore.Mvc;
 using static BCrypt.Net.BCrypt;
 using System.Text.RegularExpressions;
+using ShoppingifyAPI.Services;
 
 namespace ShoppingifyAPI.Controllers
 {
@@ -40,7 +41,9 @@ namespace ShoppingifyAPI.Controllers
                 _context.Users.Add(user);
                 _context.SaveChanges();
 
-                return Created("", "token");
+                var token = TokenService.GenerateToken(user);
+
+                return Created("", new { token });
             }
             catch (ArgumentException e)
             {
@@ -65,7 +68,9 @@ namespace ShoppingifyAPI.Controllers
                 if (userDb is null || !Verify(user.Password, userDb.Password))
                     throw new ArgumentException("Email or password invalid");
 
-                return Ok("token");
+                var token = TokenService.GenerateToken(userDb);
+
+                return Ok(new { token });
             }
             catch (ArgumentException e)
             {
