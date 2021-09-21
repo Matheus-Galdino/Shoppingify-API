@@ -6,6 +6,7 @@ namespace ShoppingifyAPI.Context
     public class ApiContext : DbContext
     {
         public DbSet<Item> Items { get; set; }
+        public DbSet<User> Users { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<ShoppingList> ShoppingLists { get; set; }
         public DbSet<ShoppingListItem> ShoppingListItems { get; set; }
