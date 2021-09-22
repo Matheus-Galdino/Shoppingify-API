@@ -12,5 +12,8 @@ namespace ShoppingifyAPI.Models
         public DateTime Date { get; set; }
         public ListStatus Status { get; set; }
         public List<ShoppingListItem> Items { get; set; } = new List<ShoppingListItem>();
+
+        public int UserId { get; set; }
+        public User User { get; set; }
     }
 }
