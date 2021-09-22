@@ -20,7 +20,7 @@ namespace ShoppingifyAPI.Services
                     new Claim("Email", user.Email),
                     new Claim("Id", user.Id.ToString())
                 }),
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddHours(24),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 

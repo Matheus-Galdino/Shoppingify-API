@@ -53,7 +53,7 @@ namespace ShoppingifyAPI.Controllers
         }
 
         [HttpPost("signin")]
-        public ActionResult SignIn([FromBody] User user)
+        public ActionResult SignIn([FromBody] User user, [FromQuery] bool keepConnected)
         {
             try
             {
@@ -70,11 +70,44 @@ namespace ShoppingifyAPI.Controllers
 
                 var token = TokenService.GenerateToken(userDb);
 
-                return Ok(new { token });
+                if (!keepConnected)
+                    return Ok(new { token });
+
+                var userHash = HashPassword(userDb.Email);
+                _context.KeepUserLogged.Add(new KeepUserLogged { UserId = userDb.Id, UserHash = userHash });
+                _context.SaveChanges();
+
+                return Ok(new { token, userHash });
+
             }
             catch (ArgumentException e)
             {
                 return BadRequest(new { error = e.Message });
+            }
+        }
+
+        [HttpGet("connected/{userHash}")]
+        public ActionResult GetConnectedUser([FromRoute] string userHash)
+        {
+            try
+            {
+                var userId = _context.KeepUserLogged.FirstOrDefault(x => x.UserHash == userHash)?.UserId;
+
+                if (userId is null)
+                    throw new ArgumentException("No user found with given hash");
+
+                var user = _context.Users.FirstOrDefault(x => x.Id == userId);
+
+                if (user is null)
+                    throw new ArgumentException("Login again");
+
+                var token = TokenService.GenerateToken(user);
+
+                return Ok(new { token });
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
             }
         }
 
