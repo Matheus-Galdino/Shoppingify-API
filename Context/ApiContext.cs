@@ -9,6 +9,7 @@ namespace ShoppingifyAPI.Context
         public DbSet<User> Users { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<ShoppingList> ShoppingLists { get; set; }
+        public DbSet<KeepUserLogged> KeepUserLogged { get; set; }
         public DbSet<ShoppingListItem> ShoppingListItems { get; set; }
 
         public ApiContext(DbContextOptions<ApiContext> options) : base(options) { }
@@ -17,6 +18,8 @@ namespace ShoppingifyAPI.Context
         {
             modelBuilder.Entity<ShoppingListItem>().HasKey(shopI => new { shopI.ItemId, shopI.ShoppingListId });
             modelBuilder.Entity<ShoppingListItem>().Ignore(si => si.ShoppingList).ToTable("ShoppingListItem");
+
+            modelBuilder.Entity<KeepUserLogged>().HasKey(x => new { x.UserId, x.UserHash });
 
             base.OnModelCreating(modelBuilder);
         }
