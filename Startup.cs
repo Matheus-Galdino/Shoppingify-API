@@ -25,6 +25,15 @@ namespace ShoppingifyAPI
         public void ConfigureServices(IServiceCollection services)
         {
 
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins("http://localhost:8080").AllowAnyHeader().AllowAnyMethod();
+                });
+            });
+
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -71,10 +80,10 @@ namespace ShoppingifyAPI
 
             app.UseRouting();
 
+            app.UseCors();
+
             app.UseAuthentication();
             app.UseAuthorization();
-
-            app.UseCors(x => x.AllowAnyMethod().AllowAnyOrigin().AllowAnyHeader());
 
             app.UseEndpoints(endpoints =>
             {
