@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using ShoppingifyAPI.Models.Enums;
 using System;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ShoppingifyAPI.Controllers
 {
@@ -16,12 +17,16 @@ namespace ShoppingifyAPI.Controllers
     {
         private readonly ApiContext _context;
 
+        private int AuthedUserId => int.Parse(User.FindFirst("Id").Value);
+
         public ShoppingListController(ApiContext context) => _context = context;
 
         [HttpGet]
-        public List<ShoppingList> GetLists() => _context.ShoppingLists.OrderBy(x => x.Status).ToList();
+        [Authorize]
+        public List<ShoppingList> GetLists() => _context.ShoppingLists.Where(x => x.UserId == AuthedUserId). OrderBy(x => x.Status).ToList();
 
         [HttpGet("{listId}/items")]
+        [Authorize]
         public List<Group<ShoppingListItem>> GetListItem([FromRoute] int listId)
         {
             var list = _context.ShoppingLists.Where(x => x.Id == listId).FirstOrDefault();
@@ -38,6 +43,7 @@ namespace ShoppingifyAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<ShoppingList>> CreateList([FromBody] ShoppingList shoppingList)
         {
             if (string.IsNullOrEmpty(shoppingList?.Name)) return BadRequest(new { error = "A list must have a name" });
@@ -45,6 +51,7 @@ namespace ShoppingifyAPI.Controllers
             if (shoppingList.Date < DateTime.Today) return BadRequest(new { error = "List date must be at least today" });
 
             shoppingList.Active = false;
+            shoppingList.UserId = AuthedUserId;
             shoppingList.Status = ListStatus.In_Progress;
 
             await _context.ShoppingLists.AddAsync(shoppingList);
@@ -54,9 +61,10 @@ namespace ShoppingifyAPI.Controllers
         }
 
         [HttpPost("{listId}/add/{itemId}")]
+        [Authorize]
         public ActionResult AddItemToList([FromRoute] int listId, [FromRoute] int itemId)
         {
-            var item = _context.Items.Where(x => x.Id == itemId).FirstOrDefault();
+            var item = _context.Items.Where(x => x.Id == itemId && x.UserId == AuthedUserId).FirstOrDefault();
 
             if (item is null) return BadRequest(new { error = "Something went wrong" });
 
@@ -73,9 +81,10 @@ namespace ShoppingifyAPI.Controllers
         }
 
         [HttpPut("{listId}/status")]
+        [Authorize]
         public ActionResult ChangeListStatus([FromRoute] int listId, [FromQuery] ListStatus status)
         {
-            var list = _context.ShoppingLists.Where(x => x.Id == listId).FirstOrDefault();
+            var list = _context.ShoppingLists.Where(x => x.Id == listId && x.UserId == AuthedUserId).FirstOrDefault();
 
             list.Status = status;
 
@@ -87,16 +96,17 @@ namespace ShoppingifyAPI.Controllers
         }
 
         [HttpPut("active/{listId}")]
+        [Authorize]
         public ActionResult SetActiveList([FromRoute] int listId)
         {
-            var activeList = _context.ShoppingLists.Where(x => x.Active).FirstOrDefault();
+            var activeList = _context.ShoppingLists.Where(x => x.Active && x.UserId == AuthedUserId).FirstOrDefault();
 
             if (activeList is not null)
                 activeList.Active = false;
 
             if (activeList?.Id == listId) return BadRequest(new { error = "List is already active" });
 
-            var selectedList = _context.ShoppingLists.Where(x => x.Id == listId).FirstOrDefault();
+            var selectedList = _context.ShoppingLists.Where(x => x.Id == listId && x.UserId == AuthedUserId).FirstOrDefault();
             selectedList.Active = true;
 
             _context.SaveChanges();
@@ -105,6 +115,7 @@ namespace ShoppingifyAPI.Controllers
         }        
 
         [HttpPut("{listId}/item/{itemId}")]
+        [Authorize]
         public ActionResult UpdateItemQuantity([FromRoute] int listId, [FromRoute] int itemId, [FromQuery] int quantity)
         {
             var item = _context.ShoppingListItems.Where(x => x.ItemId == itemId && x.ShoppingListId == listId).FirstOrDefault();
@@ -123,9 +134,10 @@ namespace ShoppingifyAPI.Controllers
         }
 
         [HttpDelete("{listId}")]
+        [Authorize]
         public ActionResult DeleteList([FromRoute] int listId)
         {
-            var list = _context.ShoppingLists.Where(x => x.Id == listId).FirstOrDefault();
+            var list = _context.ShoppingLists.Where(x => x.Id == listId && x.UserId == AuthedUserId).FirstOrDefault();
             _context.ShoppingLists.Remove(list);
             _context.SaveChanges();
 
@@ -133,6 +145,7 @@ namespace ShoppingifyAPI.Controllers
         }
 
         [HttpDelete("{listId}/item/{itemId}")]
+        [Authorize]
         public ActionResult RemoveItemFromList([FromRoute] int listId, [FromRoute] int itemId)
         {
             var item = _context.ShoppingListItems.Where(x => x.ItemId == itemId && x.ShoppingListId == listId).FirstOrDefault();

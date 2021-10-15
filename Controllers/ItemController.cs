@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ShoppingifyAPI.Controllers
 {
@@ -15,14 +16,18 @@ namespace ShoppingifyAPI.Controllers
     {
         private readonly ApiContext _context;
 
+        private int AuthedUserId => int.Parse(User.FindFirst("Id").Value);
+
         public ItemController(ApiContext context) => _context = context;
 
         [HttpGet]
+        [Authorize]
         public ActionResult<List<Group<Item>>> GetAll()
         {
             var items = _context.Items.Include(x => x.Category).ToList();
 
             var groupedItems = items
+                .Where(x => x.UserId == AuthedUserId)
                 .GroupBy(x => x.Category, (key, group) => new Group<Item>(key.Name, group))
                 .OrderBy(x => x.Key)
                 .ToList();
@@ -31,6 +36,7 @@ namespace ShoppingifyAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<Item>> Create([FromBody] Item item)
         {
             if (string.IsNullOrEmpty(item.Name?.Trim())) return BadRequest(new { error = "Item name must not be empty" });
@@ -50,6 +56,8 @@ namespace ShoppingifyAPI.Controllers
 
             if (category is null) return BadRequest(new { error = "Invalid category" });
 
+            item.UserId = AuthedUserId;
+
             await _context.Items.AddAsync(item);
             await _context.SaveChangesAsync();
 
@@ -57,8 +65,11 @@ namespace ShoppingifyAPI.Controllers
         }
 
         [HttpDelete]
+        [Authorize]
         public async Task<ActionResult> Delete([FromBody] Item item)
         {
+            item.UserId = AuthedUserId;
+
             _context.Items.Remove(item);
             await _context.SaveChangesAsync();
 
